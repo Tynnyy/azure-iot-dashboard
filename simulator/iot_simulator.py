@@ -18,8 +18,44 @@ class IoTSimulator:
         self.sensor_config = sensor_config
         self.sensor_id = None
 
-    def register_sensor(self):
-        """Register a new sensor with the API"""
+    def find_existing_sensor(self):
+        """Find an existing sensor by name"""
+        url = f"{self.api_url}/api/sensors"
+
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+
+            data = response.json()
+            sensors = data.get('data', [])
+
+            # Find sensor by name
+            for sensor in sensors:
+                if sensor['sensor_name'] == self.sensor_config['name']:
+                    self.sensor_id = sensor['sensor_id']
+                    print(f"✓ Found existing sensor!")
+                    print(f"  Sensor ID: {self.sensor_id}")
+                    print(f"  Name: {sensor['sensor_name']}")
+                    print(f"  Type: {sensor['sensor_type']}")
+                    print(f"  Status: {sensor['sensor_status']}")
+                    return True
+
+            print(f"✗ Sensor '{self.sensor_config['name']}' not found")
+            return False
+
+        except requests.exceptions.RequestException as e:
+            print(f"✗ Failed to find sensor: {e}")
+            return False
+
+    def register_sensor(self, use_existing=False):
+        """Register a new sensor with the API or use existing one"""
+
+        # If use_existing flag is set, try to find existing sensor first
+        if use_existing:
+            if self.find_existing_sensor():
+                return True
+            print("Sensor not found. Creating new one...")
+
         url = f"{self.api_url}/api/sensor"
 
         payload = {
@@ -30,6 +66,12 @@ class IoTSimulator:
 
         try:
             response = requests.post(url, json=payload)
+
+            # If sensor already exists (409), try to find it
+            if response.status_code == 409:
+                print(f"⚠ Sensor already exists. Attempting to use existing sensor...")
+                return self.find_existing_sensor()
+
             response.raise_for_status()
 
             data = response.json()
@@ -88,20 +130,21 @@ class IoTSimulator:
             print(f"✗ Failed to send data: {e}")
             return False
 
-    def run(self, interval=10, duration=None):
+    def run(self, interval=10, duration=None, use_existing=False):
         """
         Run the simulator
 
         Args:
             interval: Seconds between readings (default: 10)
             duration: Total duration in seconds (None = run indefinitely)
+            use_existing: Use existing sensor instead of registering new one
         """
         print("\n" + "="*60)
         print("IoT Sensor Simulator Started")
         print("="*60)
 
-        # Register sensor first
-        if not self.register_sensor():
+        # Register sensor first (or find existing)
+        if not self.register_sensor(use_existing=use_existing):
             return
 
         print(f"\nSending data every {interval} seconds...")
@@ -158,6 +201,8 @@ def main():
                         help='Base sensor value')
     parser.add_argument('--variance', type=float, default=None,
                         help='Value variance range')
+    parser.add_argument('--use-existing', action='store_true',
+                        help='Use existing sensor instead of registering new one')
 
     args = parser.parse_args()
 
@@ -184,7 +229,7 @@ def main():
     }
 
     simulator = IoTSimulator(args.url, sensor_config)
-    simulator.run(interval=args.interval, duration=args.duration)
+    simulator.run(interval=args.interval, duration=args.duration, use_existing=args.use_existing)
 
 
 if __name__ == "__main__":
