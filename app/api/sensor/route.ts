@@ -72,8 +72,20 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error registering sensor:', error);
+
+    // Better error serialization
+    const errorMessage = error instanceof Error
+      ? error.message
+      : typeof error === 'object' && error !== null
+        ? JSON.stringify(error)
+        : String(error);
+
     return NextResponse.json(
-      { error: 'Internal server error', message: String(error) },
+      {
+        error: 'Internal server error',
+        message: errorMessage,
+        details: error
+      },
       { status: 500 }
     );
   }

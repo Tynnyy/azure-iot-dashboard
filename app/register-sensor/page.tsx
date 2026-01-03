@@ -48,6 +48,9 @@ export default function RegisterSensorPage() {
           locationName: '',
         });
       } else {
+        // Log full error for debugging
+        console.error('Registration error:', data);
+
         // Show specific error messages
         let errorMessage = data.error || 'Failed to register sensor';
 
@@ -56,9 +59,15 @@ export default function RegisterSensorPage() {
         } else if (response.status === 401 || response.status === 403) {
           errorMessage = 'You must be logged in to register sensors.';
         } else if (response.status === 400) {
-          errorMessage = 'Invalid input. Please check your form data.';
+          errorMessage = `Invalid input: ${data.message || 'Please check your form data.'}`;
+          if (data.details) {
+            console.error('Validation details:', data.details);
+          }
         } else if (response.status === 500) {
-          errorMessage = `Server error: ${data.message || 'Please try again later.'}`;
+          // Better error message handling
+          const errorDetail = data.message || data.details?.message || 'Unknown error';
+          errorMessage = `Server error: ${errorDetail}`;
+          console.error('Server error details:', data.details);
         }
 
         setResult({
@@ -67,6 +76,7 @@ export default function RegisterSensorPage() {
         });
       }
     } catch (error) {
+      console.error('Network error:', error);
       setResult({
         success: false,
         message: 'Network error. Please try again.',
