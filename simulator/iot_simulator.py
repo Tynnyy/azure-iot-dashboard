@@ -144,8 +144,8 @@ def main():
     parser = argparse.ArgumentParser(description='IoT Sensor Data Simulator')
     parser.add_argument('--url', default='http://localhost:3000',
                         help='API base URL (default: http://localhost:3000)')
-    parser.add_argument('--name', default='Simulated_Temperature_Sensor',
-                        help='Sensor name')
+    parser.add_argument('--name', default=None,
+                        help='Sensor name (default: auto-generated with timestamp)')
     parser.add_argument('--type', default='Temperature',
                         help='Sensor type (Temperature, Humidity, Pressure, Light)')
     parser.add_argument('--location', default='Simulation Lab',
@@ -160,6 +160,11 @@ def main():
                         help='Value variance range')
 
     args = parser.parse_args()
+
+    # Auto-generate sensor name with timestamp if not provided
+    if args.name is None:
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        args.name = f"{args.type}_Sensor_{timestamp}"
 
     # Default values based on sensor type
     default_configs = {

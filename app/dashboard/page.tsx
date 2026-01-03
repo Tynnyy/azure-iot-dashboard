@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { SensorGrid } from '@/components/dashboard/sensor-grid';
-import { StatsCard } from '@/components/dashboard/stats-card';
+import { InteractiveStats } from '@/components/dashboard/interactive-stats';
 import type { SensorWithLatestReading } from '@/lib/types';
 
 async function getSensorsWithLatestReadings(): Promise<SensorWithLatestReading[]> {
@@ -86,28 +86,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatsCard
-          title="Total Sensors"
-          value={stats.totalSensors}
-          icon={<span className="text-4xl">📡</span>}
-        />
-        <StatsCard
-          title="Active Sensors"
-          value={stats.activeSensors}
-          icon={<span className="text-4xl">✅</span>}
-        />
-        <StatsCard
-          title="Locations"
-          value={stats.totalLocations}
-          icon={<span className="text-4xl">📍</span>}
-        />
-        <StatsCard
-          title="24h Readings"
-          value={stats.recentReadings}
-          icon={<span className="text-4xl">📊</span>}
-        />
-      </div>
+      <InteractiveStats stats={stats} />
 
       {/* Sensors Grid */}
       <div>
