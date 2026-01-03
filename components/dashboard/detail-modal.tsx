@@ -66,10 +66,10 @@ export function DetailModal({ type, onClose }: DetailModalProps) {
         const result = await response.json();
 
         if (type === 'active-sensors') {
-          setData(result.sensors?.filter((s: Sensor) => s.sensor_status === 'active') || []);
+          setData(result.data?.filter((s: Sensor) => s.sensor_status === 'active') || []);
         } else if (type === 'readings') {
           // Fetch recent readings from all sensors
-          const sensorsData = result.sensors || [];
+          const sensorsData = result.data || [];
           const allReadings: Reading[] = [];
 
           for (const sensor of sensorsData.slice(0, 10)) {
@@ -91,7 +91,7 @@ export function DetailModal({ type, onClose }: DetailModalProps) {
           );
           setData(allReadings.slice(0, 50));
         } else {
-          setData(result.sensors || result.locations || []);
+          setData(result.data || []);
         }
       } catch (error) {
         console.error('Error fetching details:', error);

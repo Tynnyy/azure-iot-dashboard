@@ -88,6 +88,11 @@ npm run dev
 
 The simulator sends realistic sensor data to your API for testing.
 
+
+```powershell
+python simulator/iot_simulator.py --url https://azure-iot-dashboard.vercel.app --type "Light" --location "Office"
+```
+
 ### Install Dependencies
 
 ```bash
