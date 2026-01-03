@@ -161,10 +161,11 @@ def main():
 
     args = parser.parse_args()
 
-    # Auto-generate sensor name with timestamp if not provided
+    # Auto-generate sensor name with timestamp and random number if not provided
     if args.name is None:
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        args.name = f"{args.type}_Sensor_{timestamp}"
+        random_suffix = random.randint(1000, 9999)
+        args.name = f"{args.type}_Sensor_{timestamp}_{random_suffix}"
 
     # Default values based on sensor type
     default_configs = {
