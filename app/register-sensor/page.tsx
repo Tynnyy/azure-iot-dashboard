@@ -48,9 +48,22 @@ export default function RegisterSensorPage() {
           locationName: '',
         });
       } else {
+        // Show specific error messages
+        let errorMessage = data.error || 'Failed to register sensor';
+
+        if (response.status === 409) {
+          errorMessage = 'A sensor with this name already exists. Please use a different name.';
+        } else if (response.status === 401 || response.status === 403) {
+          errorMessage = 'You must be logged in to register sensors.';
+        } else if (response.status === 400) {
+          errorMessage = 'Invalid input. Please check your form data.';
+        } else if (response.status === 500) {
+          errorMessage = `Server error: ${data.message || 'Please try again later.'}`;
+        }
+
         setResult({
           success: false,
-          message: data.error || 'Failed to register sensor',
+          message: errorMessage,
         });
       }
     } catch (error) {
@@ -69,6 +82,15 @@ export default function RegisterSensorPage() {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
+    });
+  };
+
+  const generateUniqueName = () => {
+    const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
+    const suggestedName = `${formData.sensorType}_Sensor_${timestamp}`;
+    setFormData({
+      ...formData,
+      sensorName: suggestedName,
     });
   };
 
@@ -99,18 +121,29 @@ export default function RegisterSensorPage() {
                 >
                   Sensor Name <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  id="sensorName"
-                  name="sensorName"
-                  value={formData.sensorName}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g., Living_Room_Temp_01"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    id="sensorName"
+                    name="sensorName"
+                    value={formData.sensorName}
+                    onChange={handleChange}
+                    required
+                    placeholder="e.g., Living_Room_Temp_01"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <Button
+                    type="button"
+                    onClick={generateUniqueName}
+                    variant="outline"
+                    size="sm"
+                    className="whitespace-nowrap"
+                  >
+                    🎲 Generate
+                  </Button>
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Use a unique name for this sensor
+                  Use a unique name or click &quot;Generate&quot; for auto-generated name
                 </p>
               </div>
 
