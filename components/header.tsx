@@ -33,6 +33,11 @@ export function Header({ user }: HeaderProps) {
                 <Link href="/dashboard" className="text-gray-700 hover:text-blue-600">
                   Dashboard
                 </Link>
+                <Link href="/register-sensor">
+                  <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700">
+                    📡 Register Sensor
+                  </Button>
+                </Link>
                 <span className="text-sm text-gray-500">{user.email}</span>
                 <Button onClick={handleSignOut} variant="outline" size="sm">
                   Sign Out
