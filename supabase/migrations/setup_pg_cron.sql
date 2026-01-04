@@ -9,6 +9,23 @@ CREATE EXTENSION IF NOT EXISTS pg_net;
 -- Grant permissions to use pg_net
 GRANT USAGE ON SCHEMA net TO postgres, anon, authenticated, service_role;
 
+-- Create a configuration table to store API settings
+-- This avoids permission issues with ALTER DATABASE
+CREATE TABLE IF NOT EXISTS cron_config (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Insert default configuration (you'll update these after Vercel deployment)
+INSERT INTO cron_config (key, value) VALUES
+  ('api_url', 'https://your-project.vercel.app'),
+  ('cron_secret', 'your_cron_secret_here')
+ON CONFLICT (key) DO NOTHING;
+
+-- Add comment
+COMMENT ON TABLE cron_config IS 'Configuration settings for cron jobs';
+
 -- Create a function to check inactive sensors and send alerts
 -- This function will make an HTTP request to our Next.js API endpoint
 CREATE OR REPLACE FUNCTION check_inactive_sensors_cron()
@@ -20,13 +37,12 @@ DECLARE
   api_url TEXT;
   cron_secret TEXT;
 BEGIN
-  -- Get the API URL from environment (you'll need to set this in Supabase)
-  -- For now, we'll use a placeholder - you'll update this after deployment
-  api_url := current_setting('app.settings.api_url', true);
-  cron_secret := current_setting('app.settings.cron_secret', true);
+  -- Get the API URL and secret from config table
+  SELECT value INTO api_url FROM cron_config WHERE key = 'api_url';
+  SELECT value INTO cron_secret FROM cron_config WHERE key = 'cron_secret';
 
   -- If settings are not configured, skip execution
-  IF api_url IS NULL OR api_url = '' THEN
+  IF api_url IS NULL OR api_url = '' OR api_url = 'https://your-project.vercel.app' THEN
     RAISE NOTICE 'API URL not configured. Skipping inactive sensor check.';
     RETURN;
   END IF;
