@@ -103,12 +103,12 @@ export default async function SensorDetailPage({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm text-gray-500 mb-1">Current Value</p>
+            <p className="text-sm text-gray-500 mb-1">Last Value</p>
             <p className="text-3xl font-bold text-blue-600">
               {latestReading ? formatSensorValue(latestReading.data_value, sensor.sensor_type) : 'N/A'}
             </p>
             <p className="text-xs text-gray-400 mt-2">
-              {formatTimestamp(currentTime)}
+              {latestReading ? formatTimestamp(latestReading.data_timestamp) : formatTimestamp(currentTime)}
             </p>
           </CardContent>
         </Card>
