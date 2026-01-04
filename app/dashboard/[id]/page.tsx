@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { LineChartComponent } from '@/components/charts/line-chart';
 import { formatTimestamp, formatSensorValue, getStatusColor } from '@/lib/utils';
+import { LocalTimestamp } from '@/components/ui/local-timestamp';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { SensorActions } from '@/components/dashboard/sensor-actions';
@@ -107,9 +108,10 @@ export default async function SensorDetailPage({
             <p className="text-3xl font-bold text-blue-600">
               {latestReading ? formatSensorValue(latestReading.data_value, sensor.sensor_type) : 'N/A'}
             </p>
-            <p className="text-xs text-gray-400 mt-2">
-              {latestReading ? formatTimestamp(latestReading.data_timestamp) : formatTimestamp(currentTime)}
-            </p>
+            <LocalTimestamp
+              timestamp={latestReading ? latestReading.data_timestamp : currentTime}
+              className="text-xs text-gray-400 mt-2 block"
+            />
           </CardContent>
         </Card>
 
