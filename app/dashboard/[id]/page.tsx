@@ -5,6 +5,7 @@ import { LineChartComponent } from '@/components/charts/line-chart';
 import { formatTimestamp, formatSensorValue, getStatusColor } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { SensorActions } from '@/components/dashboard/sensor-actions';
 
 async function getSensorDetails(sensorId: string) {
   const supabase = await createClient();
@@ -67,19 +68,24 @@ export default async function SensorDetailPage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href="/dashboard">
-            <Button variant="ghost" size="sm" className="mb-2">
-              ← Back to Dashboard
-            </Button>
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">{sensor.sensor_name}</h1>
-          <p className="text-gray-600 mt-1">{sensor.sensor_type}</p>
+      <div>
+        <Link href="/dashboard">
+          <Button variant="ghost" size="sm" className="mb-2">
+            ← Back to Dashboard
+          </Button>
+        </Link>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">{sensor.sensor_name}</h1>
+            <p className="text-gray-600 mt-1">{sensor.sensor_type}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(sensor.sensor_status)}`}>
+              {sensor.sensor_status}
+            </span>
+            <SensorActions sensor={sensor} />
+          </div>
         </div>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(sensor.sensor_status)}`}>
-          {sensor.sensor_status}
-        </span>
       </div>
 
       {/* Info Cards */}

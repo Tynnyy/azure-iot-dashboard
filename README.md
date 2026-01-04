@@ -84,13 +84,98 @@ npm run dev
 
 7. **Open [http://localhost:3000](http://localhost:3000)**
 
+## How to Develop
+
+### Setting Up Your Development Environment
+
+1. **Open VSCode:**
+   - Navigate to the project folder in File Explorer: `C:\Users\Acer\OneDrive\Documents\Educationnn\DEGREE\IOT - Internet of Things\IOT CW2\my-app`
+   - Right-click and select "Open with Code"
+   - Or from command line: `code "C:\Users\Acer\OneDrive\Documents\Educationnn\DEGREE\IOT - Internet of Things\IOT CW2\my-app"`
+
+2. **Start Claude for Programming Assistant:**
+   - Open a terminal in VSCode (Terminal > New Terminal)
+   - Run: `claude code`
+   - This starts Claude Code CLI to help you with development tasks
+
+3. **Start the Development Server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open the Application:**
+   - Navigate to [http://localhost:3000](http://localhost:3000) in your browser
+
+Now you're ready to develop with AI assistance from Claude!
+
+## How to Simulate
+
+### Step-by-Step Guide to Submit Sensor Data
+
+#### Option 1: Using the Python Simulator (Recommended)
+
+1. **Install Python Dependencies:**
+   ```bash
+   cd simulator
+   pip install -r requirements.txt
+   ```
+
+2. **Run the Simulator:**
+   ```bash
+   # Basic usage - automatically registers sensor and starts sending data
+   python iot_simulator.py
+
+   # Custom configuration
+   python iot_simulator.py --name "Kitchen_Temp" --type "Temperature" --location "Kitchen" --interval 5
+   ```
+
+3. **View Data in Dashboard:**
+   - Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
+   - You should see the sensor appear and data updating in real-time
+
+#### Option 2: Manual API Testing with cURL
+
+1. **Register a Sensor:**
+   ```bash
+   curl -X POST http://localhost:3000/api/sensor \
+     -H "Content-Type: application/json" \
+     -d "{\"sensorName\":\"Test_Sensor_001\",\"sensorType\":\"Temperature\",\"locationName\":\"Lab\"}"
+   ```
+
+   Save the `sensorID` from the response (e.g., `"sensorID": "abc123..."`)
+
+2. **Submit Sensor Data:**
+   ```bash
+   # Replace {SENSOR_ID} with the ID from step 1
+   curl -X POST http://localhost:3000/api/sensors/{SENSOR_ID}/data \
+     -H "Content-Type: application/json" \
+     -d "{\"value\":25.5}"
+   ```
+
+3. **Submit Multiple Data Points:**
+   ```bash
+   # Send different values to simulate sensor readings
+   curl -X POST http://localhost:3000/api/sensors/{SENSOR_ID}/data \
+     -H "Content-Type: application/json" \
+     -d "{\"value\":26.2}"
+
+   curl -X POST http://localhost:3000/api/sensors/{SENSOR_ID}/data \
+     -H "Content-Type: application/json" \
+     -d "{\"value\":24.8}"
+   ```
+
+4. **View the Data:**
+   - Go to [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
+   - Click on your sensor to see the data visualization
+   - Or use the API: `curl http://localhost:3000/api/sensors/{SENSOR_ID}/data`
+
 ## Using the Python Simulator
 
 The simulator sends realistic sensor data to your API for testing.
 
 
 ```powershell
-python simulator/iot_simulator.py --url https://azure-iot-dashboard.vercel.app --type "Light" --location "Office"
+python simulator/iot_simulator.py --url https://azure-iot-dashboard.vercel.app --name "Humidity_Sensor_20260103T085236" --type "Humidity" --use-existing --interval 5
 ```
 
 ### Install Dependencies
@@ -221,22 +306,32 @@ my-app/
   - `data_type` (VARCHAR)
   - `created_at` (TIMESTAMP)
 
-## Deployment
+## How to Deploy
 
-### Deploy to Vercel
+Since GitHub connectivity to Vercel is already configured, deployment is automatic:
 
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy
-
-### Update Supabase Settings
-
-1. Go to Supabase Dashboard > Authentication > URL Configuration
-2. Add your Vercel domain to Redirect URLs:
+1. **Commit Your Changes:**
+   ```bash
+   git add .
+   git commit -m "Your commit message"
    ```
-   https://your-app.vercel.app/api/auth/callback
+
+2. **Push to GitHub:**
+   ```bash
+   git push origin main
    ```
+
+3. **Automatic Deployment:**
+   - Vercel will automatically detect the push
+   - A new deployment will start immediately
+   - You'll receive a notification when deployment is complete
+
+4. **View Your Deployment:**
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click on your project to see deployment status
+   - Your live URL: https://azure-iot-dashboard.vercel.app
+
+**Note:** Environment variables are already configured in Vercel. If you need to update them, go to your Vercel project settings > Environment Variables.
 
 ## Testing
 

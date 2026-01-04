@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { formatTimestamp, formatSensorValue, getStatusColor } from '@/lib/utils';
+import { Sparkline } from '@/components/charts/sparkline';
 import type { SensorWithLatestReading } from '@/lib/types';
 
 interface SensorCardProps {
@@ -16,8 +17,8 @@ export function SensorCard({ sensor }: SensorCardProps) {
         <CardHeader>
           <div className="flex items-start justify-between">
             <CardTitle className="text-lg">{sensor.sensor_name}</CardTitle>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(sensor.sensor_status)}`}>
-              {sensor.sensor_status}
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(sensor.computed_status || sensor.sensor_status)}`}>
+              {sensor.computed_status || sensor.sensor_status}
             </span>
           </div>
         </CardHeader>
@@ -44,6 +45,13 @@ export function SensorCard({ sensor }: SensorCardProps) {
                 <p className="text-xs text-gray-400">
                   {formatTimestamp(sensor.latest_reading.data_timestamp)}
                 </p>
+              </div>
+            )}
+
+            {sensor.recent_readings && sensor.recent_readings.length > 0 && (
+              <div>
+                <p className="text-sm text-gray-500 mb-1">24h Trend</p>
+                <Sparkline data={sensor.recent_readings} />
               </div>
             )}
           </div>

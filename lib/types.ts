@@ -144,6 +144,11 @@ export interface SensorWithLatestReading extends Sensor {
     data_value: number;
     data_timestamp: string;
   };
+  recent_readings?: Array<{
+    data_value: number;
+    data_timestamp: string;
+  }>;
+  computed_status?: 'active' | 'inactive';
 }
 
 // API Request/Response types

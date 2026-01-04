@@ -16,6 +16,12 @@ export const submitDataSchema = z.object({
     .or(z.string().transform((val) => parseFloat(val))),
 });
 
+export const updateSensorSchema = z.object({
+  sensorName: z.string()
+    .min(3, "Sensor name must be at least 3 characters")
+    .max(255, "Sensor name must be less than 255 characters"),
+});
+
 export const loginSchema = z.object({
   email: z.string()
     .email("Invalid email address"),
