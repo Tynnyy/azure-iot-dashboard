@@ -20,44 +20,44 @@ export function LineChartComponent({ data, color = "#3b82f6" }: LineChartCompone
 
   const chartData = data.map(item => {
     const date = new Date(item.data_timestamp);
-    const minutes = date.getMinutes();
-    const roundedMinutes = Math.floor(minutes / 10) * 10;
-
     return {
       timestamp: date.getTime(),
       value: item.data_value,
       formattedTime: format(date, 'HH:mm'),
       fullTime: format(date, 'MMM dd, yyyy HH:mm:ss'),
-      roundedMinutes: roundedMinutes,
-      shouldShowLabel: minutes % 10 === 0, // Show label only at 10-minute intervals
     };
   });
 
-  // Custom tick component that only shows labels at 10-minute intervals
-  const CustomTick = (props: any) => {
-    const { x, y, payload } = props;
-    const dataPoint = chartData[payload.index];
+  // Generate ticks at 10-minute intervals
+  const generateTicks = () => {
+    if (chartData.length === 0) return [];
 
-    // Only show tick if it's at a 10-minute interval
-    if (!dataPoint || !dataPoint.shouldShowLabel) {
-      return null;
+    const minTime = chartData[0].timestamp;
+    const maxTime = chartData[chartData.length - 1].timestamp;
+
+    const ticks: number[] = [];
+    const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+    // Round down to nearest 10-minute mark
+    const startDate = new Date(minTime);
+    startDate.setMinutes(Math.floor(startDate.getMinutes() / 10) * 10, 0, 0);
+    let currentTick = startDate.getTime();
+
+    // Generate ticks every 10 minutes
+    while (currentTick <= maxTime) {
+      if (currentTick >= minTime) {
+        ticks.push(currentTick);
+      }
+      currentTick += tenMinutes;
     }
 
-    return (
-      <g transform={`translate(${x},${y})`}>
-        <text
-          x={0}
-          y={0}
-          dy={16}
-          textAnchor="end"
-          fill="#6b7280"
-          fontSize={12}
-          transform="rotate(-45)"
-        >
-          {payload.value}
-        </text>
-      </g>
-    );
+    return ticks;
+  };
+
+  const ticks = generateTicks();
+
+  const formatTick = (timestamp: number) => {
+    return format(new Date(timestamp), 'HH:mm');
   };
 
   return (
@@ -65,11 +65,16 @@ export function LineChartComponent({ data, color = "#3b82f6" }: LineChartCompone
       <LineChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis
-          dataKey="formattedTime"
+          dataKey="timestamp"
+          type="number"
+          domain={['dataMin', 'dataMax']}
+          ticks={ticks}
+          tickFormatter={formatTick}
           stroke="#6b7280"
           fontSize={12}
+          angle={-45}
+          textAnchor="end"
           height={80}
-          tick={<CustomTick />}
         />
         <YAxis
           stroke="#6b7280"
