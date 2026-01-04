@@ -24,8 +24,8 @@ async function getSensorDetails(sensorId: string) {
   }
 
   // Get last 24 hours of data
-  const twentyFourHoursAgo = new Date();
-  twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+  const now = new Date();
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
   const { data: readings } = await supabase
     .from('sensor_data')
@@ -34,8 +34,18 @@ async function getSensorDetails(sensorId: string) {
     .gte('data_timestamp', twentyFourHoursAgo.toISOString())
     .order('data_timestamp', { ascending: true });
 
+  // Compute dynamic status based on latest reading
+  const latestReading = readings && readings.length > 0 ? readings[readings.length - 1] : null;
+  const computed_status: 'active' | 'inactive' =
+    latestReading && new Date(latestReading.data_timestamp) > twentyFourHoursAgo
+      ? 'active'
+      : 'inactive';
+
   return {
-    sensor,
+    sensor: {
+      ...sensor,
+      computed_status,
+    },
     readings: readings || [],
   };
 }
@@ -80,8 +90,8 @@ export default async function SensorDetailPage({
             <p className="text-gray-600 mt-1">{sensor.sensor_type}</p>
           </div>
           <div className="flex items-center gap-3">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(sensor.sensor_status)}`}>
-              {sensor.sensor_status}
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(sensor.computed_status || sensor.sensor_status)}`}>
+              {sensor.computed_status || sensor.sensor_status}
             </span>
             <SensorActions sensor={sensor} />
           </div>
@@ -171,7 +181,11 @@ export default async function SensorDetailPage({
             )}
             <div>
               <dt className="text-sm font-medium text-gray-500">Status</dt>
-              <dd className="mt-1 text-sm text-gray-900">{sensor.sensor_status}</dd>
+              <dd className="mt-1 text-sm text-gray-900">
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(sensor.computed_status || sensor.sensor_status)}`}>
+                  {sensor.computed_status || sensor.sensor_status}
+                </span>
+              </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Created</dt>
