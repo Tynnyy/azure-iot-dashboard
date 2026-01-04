@@ -103,6 +103,41 @@ export type Database = {
           }
         ];
       };
+      alert_history: {
+        Row: {
+          id: string;
+          sensor_id: string;
+          alert_type: string;
+          alert_sent_at: string;
+          recipient_email: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          sensor_id: string;
+          alert_type: string;
+          alert_sent_at?: string;
+          recipient_email: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          sensor_id?: string;
+          alert_type?: string;
+          alert_sent_at?: string;
+          recipient_email?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "alert_history_sensor_id_fkey";
+            columns: ["sensor_id"];
+            isOneToOne: false;
+            referencedRelation: "sensors";
+            referencedColumns: ["sensor_id"];
+          }
+        ];
+      };
     };
     Views: {};
     Functions: {};
@@ -175,4 +210,14 @@ export interface ApiError {
   error: string;
   message: string;
   statusCode: number;
+}
+
+// Alert History types
+export interface AlertHistory {
+  id: string;
+  sensor_id: string;
+  alert_type: string;
+  alert_sent_at: string;
+  recipient_email: string;
+  created_at: string;
 }
