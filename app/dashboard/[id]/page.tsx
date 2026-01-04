@@ -47,6 +47,7 @@ async function getSensorDetails(sensorId: string) {
       computed_status,
     },
     readings: readings || [],
+    currentTime: new Date().toISOString(),
   };
 }
 
@@ -62,7 +63,7 @@ export default async function SensorDetailPage({
     notFound();
   }
 
-  const { sensor, readings } = data;
+  const { sensor, readings, currentTime } = data;
 
   const latestReading = readings[readings.length - 1];
   const avgValue = readings.length > 0
@@ -106,11 +107,9 @@ export default async function SensorDetailPage({
             <p className="text-3xl font-bold text-blue-600">
               {latestReading ? formatSensorValue(latestReading.data_value, sensor.sensor_type) : 'N/A'}
             </p>
-            {latestReading && (
-              <p className="text-xs text-gray-400 mt-2">
-                {formatTimestamp(latestReading.data_timestamp)}
-              </p>
-            )}
+            <p className="text-xs text-gray-400 mt-2">
+              {formatTimestamp(currentTime)}
+            </p>
           </CardContent>
         </Card>
 
