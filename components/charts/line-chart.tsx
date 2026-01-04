@@ -20,13 +20,45 @@ export function LineChartComponent({ data, color = "#3b82f6" }: LineChartCompone
 
   const chartData = data.map(item => {
     const date = new Date(item.data_timestamp);
+    const minutes = date.getMinutes();
+    const roundedMinutes = Math.floor(minutes / 10) * 10;
+
     return {
       timestamp: date.getTime(),
       value: item.data_value,
-      formattedTime: format(date, 'MMM dd HH:mm'),
+      formattedTime: format(date, 'HH:mm'),
       fullTime: format(date, 'MMM dd, yyyy HH:mm:ss'),
+      roundedMinutes: roundedMinutes,
+      shouldShowLabel: minutes % 10 === 0, // Show label only at 10-minute intervals
     };
   });
+
+  // Custom tick component that only shows labels at 10-minute intervals
+  const CustomTick = (props: any) => {
+    const { x, y, payload } = props;
+    const dataPoint = chartData[payload.index];
+
+    // Only show tick if it's at a 10-minute interval
+    if (!dataPoint || !dataPoint.shouldShowLabel) {
+      return null;
+    }
+
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0}
+          y={0}
+          dy={16}
+          textAnchor="end"
+          fill="#6b7280"
+          fontSize={12}
+          transform="rotate(-45)"
+        >
+          {payload.value}
+        </text>
+      </g>
+    );
+  };
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -36,9 +68,8 @@ export function LineChartComponent({ data, color = "#3b82f6" }: LineChartCompone
           dataKey="formattedTime"
           stroke="#6b7280"
           fontSize={12}
-          angle={-45}
-          textAnchor="end"
           height={80}
+          tick={<CustomTick />}
         />
         <YAxis
           stroke="#6b7280"
