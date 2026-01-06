@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { sendInactiveSensorAlert } from '@/lib/email';
 
 export const runtime = 'nodejs';
@@ -22,14 +23,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Use admin client for database operations (bypasses RLS)
+    const supabaseAdmin = createAdminClient();
+
+    // Regular client for auth operations
     const supabase = await createClient();
 
     // Calculate 24 hours ago
     const now = new Date();
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    // Get all sensors
-    const { data: allSensors, error: sensorsError } = await supabase
+    // Get all sensors using admin client
+    const { data: allSensors, error: sensorsError } = await supabaseAdmin
       .from('sensors')
       .select(`
         *,
@@ -52,8 +57,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get all sensor data from last 24 hours
-    const { data: recentData } = await supabase
+    // Get all sensor data from last 24 hours using admin client
+    const { data: recentData } = await supabaseAdmin
       .from('sensor_data')
       .select('sensor_id, data_timestamp')
       .gte('data_timestamp', twentyFourHoursAgo.toISOString());
@@ -70,13 +75,43 @@ export async function GET(request: NextRequest) {
 
     console.log(`Found ${inactiveSensors.length} inactive sensors out of ${allSensors.length} total sensors`);
 
+    // Update sensor_status in database for inactive sensors using admin client
+    if (inactiveSensors.length > 0) {
+      const inactiveSensorIds = inactiveSensors.map(s => s.sensor_id);
+      const { error: updateError } = await supabaseAdmin
+        .from('sensors')
+        .update({ sensor_status: 'inactive' })
+        .in('sensor_id', inactiveSensorIds);
+
+      if (updateError) {
+        console.error('Error updating inactive sensors:', updateError);
+      } else {
+        console.log(`Updated ${inactiveSensors.length} sensors to 'inactive' status`);
+      }
+    }
+
+    // Update sensor_status in database for active sensors using admin client
+    if (activeSensorIds.size > 0) {
+      const activeSensorIdsArray = Array.from(activeSensorIds);
+      const { error: updateError } = await supabaseAdmin
+        .from('sensors')
+        .update({ sensor_status: 'active' })
+        .in('sensor_id', activeSensorIdsArray);
+
+      if (updateError) {
+        console.error('Error updating active sensors:', updateError);
+      } else {
+        console.log(`Updated ${activeSensorIds.size} sensors to 'active' status`);
+      }
+    }
+
     // For each inactive sensor, check if we've already sent an alert in the last 24 hours
     let alertsSent = 0;
     const errors: string[] = [];
 
     for (const sensor of inactiveSensors) {
-      // Check if an alert was already sent in the last 24 hours
-      const { data: recentAlerts } = await supabase
+      // Check if an alert was already sent in the last 24 hours using admin client
+      const { data: recentAlerts } = await supabaseAdmin
         .from('alert_history')
         .select('*')
         .eq('sensor_id', sensor.sensor_id)
@@ -105,8 +140,8 @@ export async function GET(request: NextRequest) {
         const result = await sendInactiveSensorAlert(sensor, user.email);
 
         if (result.success) {
-          // Log the alert in alert_history
-          await supabase.from('alert_history').insert({
+          // Log the alert in alert_history using admin client
+          await supabaseAdmin.from('alert_history').insert({
             sensor_id: sensor.sensor_id,
             alert_type: 'inactive_sensor',
             recipient_email: user.email,

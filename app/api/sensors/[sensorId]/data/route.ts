@@ -50,6 +50,12 @@ export async function POST(
 
     if (insertError) throw insertError;
 
+    // Update sensor status to 'active' since it just sent data
+    await supabase
+      .from('sensors')
+      .update({ sensor_status: 'active' })
+      .eq('sensor_id', sensorId);
+
     return NextResponse.json({
       status: 'ok',
     }, { status: 201 });

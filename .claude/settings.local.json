@@ -9,7 +9,13 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(openssl rand:*)"
+      "Bash(openssl rand:*)",
+      "Bash(vercel --version:*)",
+      "Bash(curl:*)",
+      "Bash(npm run dev:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(findstr:*)",
+      "Bash(Select-String -Pattern '\"\"sensor_name\"\":|\"\"sensor_status\"\":' -Context 0)"
     ]
   }
 }
