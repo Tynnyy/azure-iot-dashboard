@@ -15,6 +15,7 @@ interface Sensor {
   sensor_name: string;
   sensor_type: string;
   sensor_status: string;
+  computed_status?: string;
   created_at: string;
   location?: {
     location_name: string;
@@ -66,7 +67,8 @@ export function DetailModal({ type, onClose }: DetailModalProps) {
         const result = await response.json();
 
         if (type === 'active-sensors') {
-          setData(result.data?.filter((s: Sensor) => s.sensor_status === 'active') || []);
+          // Filter by computed_status (based on recent data) instead of database sensor_status
+          setData(result.data?.filter((s: Sensor) => (s.computed_status || s.sensor_status) === 'active') || []);
         } else if (type === 'readings') {
           // Fetch recent readings from all sensors
           const sensorsData = result.data || [];
@@ -162,12 +164,12 @@ export function DetailModal({ type, onClose }: DetailModalProps) {
                       </div>
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          sensor.sensor_status === 'active'
+                          (sensor.computed_status || sensor.sensor_status) === 'active'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        {sensor.sensor_status}
+                        {sensor.computed_status || sensor.sensor_status}
                       </span>
                     </div>
                     <p className="text-xs text-gray-400 mt-2">

@@ -18,7 +18,28 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
-    return NextResponse.json({ data: sensors }, { status: 200 });
+    // Compute active status based on recent data (last 24 hours)
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    // Get all sensor data from last 24 hours
+    const { data: recentData } = await supabase
+      .from('sensor_data')
+      .select('sensor_id, data_timestamp')
+      .gte('data_timestamp', twentyFourHoursAgo.toISOString());
+
+    // Create a set of sensor IDs that have recent data
+    const activeSensorIds = new Set(
+      recentData?.map((d) => d.sensor_id) || []
+    );
+
+    // Add computed_status to each sensor
+    const sensorsWithComputedStatus = sensors?.map((sensor) => ({
+      ...sensor,
+      computed_status: activeSensorIds.has(sensor.sensor_id) ? 'active' : 'inactive',
+    })) || [];
+
+    return NextResponse.json({ data: sensorsWithComputedStatus }, { status: 200 });
 
   } catch (error) {
     console.error('Error fetching sensors:', error);
